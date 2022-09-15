@@ -1,6 +1,6 @@
 use rand::Rng;
 use nalgebra::{DMatrix,DVector};
-
+use text_io::{read};
 
 enum InversionError {
     SingularMatrix,
@@ -9,12 +9,30 @@ enum InversionError {
 fn main() {
     let difficulty = 2;
     let num_unknowns: usize = difficulty;
-
+    let position: usize;
+    let weight: f64;
     match generate_solution(num_unknowns) {
-        Ok(weight) => println!("Max weight and index is {weight:?}"),
-        Err(_) => println!("Matrix was singular. Try again!"),
+        Ok(answer) => {
+            println!("Max weight and index is {answer:?}");
+            position = answer.0;
+            weight = answer.1;
+        },
+        Err(_) => {
+            println!("Matrix was singular. Try again!");
+            position = 0;
+        }
     }
-    // TODO let user guess the position based on the system.
+    // TODO: replace this to make sure the user inputs a valid number
+    // i.e. one that is between 1 and num_unknowns.
+    // text_io is fine for now.
+    println!("Please guess the largest solution in the system:");
+    let guess: usize = read!();
+
+    if guess == position {
+        println!("You win!");
+    } else {
+        println!("You lose.");
+    }
 }
 
 fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError> {
@@ -33,8 +51,8 @@ fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError>
     match m1.try_inverse() {
         Some(inv) => {
             let weights = inv * b;
-            println!("The weights are {}", weights);
-            println!("the positon of max is {:?}", weights.argmax());
+            // println!("The weights are {}", weights);
+            // println!("the positon of max is {:?}", weights.argmax());
             Ok(weights.argmax())
         }
         None => {
