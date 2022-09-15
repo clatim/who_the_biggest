@@ -1,6 +1,6 @@
 use rand::Rng;
 use nalgebra::{DMatrix,DVector};
-use text_io::{read};
+use std::io;
 
 enum InversionError {
     SingularMatrix,
@@ -10,23 +10,36 @@ fn main() {
     let difficulty = 2;
     let num_unknowns: usize = difficulty;
     let position: usize;
-    let weight: f64;
-    match generate_solution(num_unknowns) {
-        Ok(answer) => {
-            println!("Max weight and index is {answer:?}");
-            position = answer.0;
-            weight = answer.1;
-        },
-        Err(_) => {
-            println!("Matrix was singular. Try again!");
-            position = 0;
+    let _weight: f64;
+    loop {
+        match generate_solution(num_unknowns) {
+            Ok(answer) => {
+                position = answer.0;
+                _weight = answer.1;
+                break;
+            },
+            Err(_) => {},
         }
     }
-    // TODO: replace this to make sure the user inputs a valid number
-    // i.e. one that is between 1 and num_unknowns.
-    // text_io is fine for now.
+    
     println!("Please guess the largest solution in the system:");
-    let guess: usize = read!();
+    let mut guess: usize;
+    loop {
+        let mut inp = String::new();
+        io::stdin()
+            .read_line(&mut inp)
+            .expect("Failed to read line!");
+        guess = inp
+            .trim()
+            .parse()
+            .expect("Input not an integer!");
+
+        if guess > 0 && guess <= num_unknowns {
+            break;
+        } else {
+            println!("Input must be in [1,{num_unknowns}]");
+        }
+    }
 
     if guess == position {
         println!("You win!");
