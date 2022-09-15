@@ -1,17 +1,26 @@
 use rand::Rng;
 use nalgebra::{DMatrix,DVector};
 
+
+enum InversionError {
+    SingularMatrix,
+}
+
 fn main() {
     println!("Hello, world!");
 
     let difficulty = 2;
     let num_unknowns: usize = difficulty;
 
-    let answer: f64 = generate_solution(num_unknowns);
+    // let answer: f64 = generate_solution(num_unknowns);
+    match generate_solution(num_unknowns) {
+        Ok(weight) => println!("Max weight is {weight}"),
+        Err(_) => println!("Matrix was singular. Try again!"),
+    }
     // TODO let user guess the position based on the system.
 }
 
-fn generate_solution(num_unknowns: usize) -> f64 {
+fn generate_solution(num_unknowns: usize) -> Result<f64, InversionError> {
     let mut rng = rand::thread_rng();
     // Generate a matrix
     let a_coefficients: Vec<f64> = (0..num_unknowns.pow(2)).map(|_| rng.gen_range(0.0..10.0)).collect();
@@ -29,13 +38,11 @@ fn generate_solution(num_unknowns: usize) -> f64 {
         Some(inv) => {
             let weights: DMatrix<f64> = inv * b;
             println!("The weights are {}", weights);
-            max_weight = weights.max();            
+            // TODO return position of maximum weight
+            Ok(weights.max())
         }
         None => {
-            println!("m1 is not invertible!");
-            max_weight = 0.0;
+            Err(InversionError::SingularMatrix)
         }
     }
-    // TODO return position of maximum weight
-    return max_weight;
 }
