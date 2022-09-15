@@ -16,6 +16,7 @@ fn main() {
             Ok(answer) => {
                 position = answer.0;
                 _weight = answer.1;
+                // position, _weight = answer;
                 break;
             },
             Err(_) => {},
@@ -72,4 +73,20 @@ fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError>
             Err(InversionError::SingularMatrix)
         }
     }
+}
+
+#[cfg(test)]
+mod my_first_test_module {
+
+    #[test]
+    fn my_first_test() {
+        assert!(1+1 == 2);
+    }
+
+    #[test]
+    #[should_panic]
+    fn my_second_test() {
+        assert!(1+1 == 3);
+    }
+
 }
