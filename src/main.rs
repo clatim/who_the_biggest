@@ -7,7 +7,7 @@ enum InversionError {
 }
 
 fn main() {
-    let difficulty = 2;
+    let difficulty = 1;
     let num_unknowns: usize = difficulty;
     let position: usize;
     let _weight: f64;
@@ -35,10 +35,10 @@ fn main() {
             .parse()
             .expect("Input not an integer!");
 
-        if guess > 0 && guess <= num_unknowns {
+        if guess < num_unknowns {
             break;
         } else {
-            println!("Input must be in [1,{num_unknowns}]");
+            println!("Input must be in [0,{}]", num_unknowns-1);
         }
     }
 
@@ -58,8 +58,11 @@ fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError>
     // Now generate a RHS
     let b_coeffs: Vec<f64> = (0..num_unknowns).map(|_| rng.gen_range(0.0..10.0)).collect();
     let b = DVector::from_vec(b_coeffs);
-    // println!("RHS will be {}", b);
-    println!("The system is {m1} = {b}");
+    // Generate vector of unknowns for print
+    let variables: Vec<String> = (0..num_unknowns).map(|n| format!("x{}", n)).collect();
+    let answers = DVector::from_vec(variables);
+    println!("The system is {m1}{answers} = {b}");
+
 
     // Now invert the matrix to find the weights
     match m1.try_inverse() {
