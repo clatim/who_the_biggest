@@ -7,16 +7,39 @@ enum InversionError {
 }
 
 fn main() {
-    let difficulty = 1;
+    let mut difficulty = 1;
+    let mut failed_attempts = 0;
+
+    loop {
+        let correct = user_guess(difficulty);
+        if correct {
+            difficulty += 1;
+            failed_attempts = 0;
+            println!("You win! Increasing level to {difficulty}");
+        } else {
+            failed_attempts += 1;
+            println!("This is failed attempt {failed_attempts}. Try again");
+            if failed_attempts == 2 {
+                println!("Last attempt before you game over!");
+            } else if failed_attempts == 3 {
+                println!("GAME OVER!");
+                break;
+            }
+
+        }
+    }
+
+}
+
+
+fn user_guess(difficulty: usize) -> bool {
     let num_unknowns: usize = difficulty;
     let position: usize;
     let _weight: f64;
     loop {
         match generate_solution(num_unknowns) {
             Ok(answer) => {
-                position = answer.0;
-                _weight = answer.1;
-                // position, _weight = answer;
+                (position, _weight) = answer;
                 break;
             },
             Err(_) => {},
@@ -43,11 +66,13 @@ fn main() {
     }
 
     if guess == position {
-        println!("You win!");
+        true
     } else {
-        println!("You lose.");
+        false
     }
+
 }
+
 
 fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError> {
     let mut rng = rand::thread_rng();
