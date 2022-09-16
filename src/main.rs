@@ -34,21 +34,15 @@ fn main() {
 
 fn user_guess(difficulty: usize) -> bool {
     let num_unknowns: usize = difficulty;
-    let position: usize;
-    let _weight: f64;
-    loop {
-        match generate_solution(num_unknowns) {
-            Ok(answer) => {
-                (position, _weight) = answer;
-                break;
-            },
-            Err(_) => {},
-        }
-    }
+
+    let (position, _weight) = match generate_solution(num_unknowns) {
+        Ok(answer) => answer,
+        Err(_) => panic!("Solution couldn't be generated. Exiting."),
+    };
     
-    println!("Please guess the largest solution in the system:");
     let mut guess: usize;
     loop {
+        println!("Please guess the largest variable in the system:");
         let mut inp = String::new();
         io::stdin()
             .read_line(&mut inp)
@@ -61,7 +55,7 @@ fn user_guess(difficulty: usize) -> bool {
         if guess < num_unknowns {
             break;
         } else {
-            println!("Input must be in [0,{}]", num_unknowns-1);
+            println!("Guess must be between 0 and {}.", num_unknowns-1);
         }
     }
 
@@ -77,17 +71,19 @@ fn user_guess(difficulty: usize) -> bool {
 fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError> {
     let mut rng = rand::thread_rng();
     // Generate a matrix
-    let a_coefficients: Vec<f64> = (0..num_unknowns.pow(2)).map(|_| rng.gen_range(0.0..10.0)).collect();
-    let m1 = DMatrix::from_vec(num_unknowns, num_unknowns, a_coefficients);
-
+    let m1 = DMatrix::from_vec(num_unknowns, num_unknowns, 
+        (0..num_unknowns.pow(2)).map(|_| rng.gen_range(0.0..10.0)).collect()
+    );
     // Now generate a RHS
-    let b_coeffs: Vec<f64> = (0..num_unknowns).map(|_| rng.gen_range(0.0..10.0)).collect();
-    let b = DVector::from_vec(b_coeffs);
+    let b = DVector::from_vec(
+        (0..num_unknowns).map(|_| rng.gen_range(0.0..10.0)).collect()
+    );
     // Generate vector of unknowns for print
-    let variables: Vec<String> = (0..num_unknowns).map(|n| format!("x{}", n)).collect();
-    let answers = DVector::from_vec(variables);
-    println!("The system is {m1}{answers} = {b}");
+    let variables = DVector::from_vec(
+        (0..num_unknowns).map(|n| format!("x{}", n)).collect()
+    );
 
+    println!("The system is {m1}{variables} = {b}");
 
     // Now invert the matrix to find the weights
     match m1.try_inverse() {
