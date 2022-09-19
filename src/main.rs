@@ -2,10 +2,6 @@ use rand::Rng;
 use nalgebra::{DMatrix,DVector};
 use std::io;
 
-enum InversionError {
-    SingularMatrix,
-}
-
 fn main() {
     let mut difficulty = 1;
     let mut failed_attempts = 0;
@@ -35,10 +31,8 @@ fn main() {
 fn user_guess(difficulty: usize) -> bool {
     let num_unknowns: usize = difficulty;
 
-    let (position, _weight) = match generate_solution(num_unknowns) {
-        Ok(answer) => answer,
-        Err(_) => panic!("Solution couldn't be generated. Exiting."),
-    };
+    let (position, _weight) = generate_solution(num_unknowns)
+        .expect("Solution couldn't be generated. Exiting.");
     
     let mut guess: usize;
     loop {
@@ -68,7 +62,7 @@ fn user_guess(difficulty: usize) -> bool {
 }
 
 
-fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError> {
+fn generate_solution(num_unknowns: usize) -> Option<(usize,f64)> {
     let mut rng = rand::thread_rng();
     // Generate a matrix
     let m1 = DMatrix::from_vec(num_unknowns, num_unknowns, 
@@ -86,17 +80,9 @@ fn generate_solution(num_unknowns: usize) -> Result<(usize,f64), InversionError>
     println!("The system is {m1}{variables} = {b}");
 
     // Now invert the matrix to find the weights
-    match m1.try_inverse() {
-        Some(inv) => {
-            let weights = inv * b;
-            // println!("The weights are {}", weights);
-            // println!("the positon of max is {:?}", weights.argmax());
-            Ok(weights.argmax())
-        }
-        None => {
-            Err(InversionError::SingularMatrix)
-        }
-    }
+    let inv = m1.try_inverse()?;
+    let weights = inv * b;
+    Some(weights.argmax())
 }
 
 #[cfg(test)]
